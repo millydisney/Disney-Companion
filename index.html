@@ -1,0 +1,263 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#ffffff">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <title>Disney Companion</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="app">
+  <header class="topbar">
+    <div>
+      <p class="kicker">REALTIME PARK PLAN</p>
+      <h1>Disney Companion</h1>
+    </div>
+    <div class="header-actions">
+      <button id="profileButton" class="profile-button" type="button" aria-label="プロフィール">👤</button>
+      <button id="shareButton" class="dark-button hidden" type="button">共有</button>
+    </div>
+  </header>
+
+  <main>
+    <section id="startScreen">
+      <div class="home-profile card">
+        <div class="profile-avatar" id="profileAvatarPreview">🎀</div>
+        <div class="home-profile-text">
+          <span>こんにちは</span>
+          <strong id="homeNameText">ゲスト</strong>
+        </div>
+        <button id="homeProfileButton" class="small-outline-button" type="button">名前変更</button>
+      </div>
+
+      <div class="home-actions">
+        <button id="createPlanButton" class="primary-button" type="button">＋ 新しいプラン</button>
+        <button id="showJoinButton" class="secondary-button" type="button">コードで参加</button>
+      </div>
+
+      <section class="group-section">
+        <div class="section-heading home-heading">
+          <div>
+            <p class="section-label">MY PLANS</p>
+            <h2>これからのプラン</h2>
+          </div>
+          <span id="upcomingCount">0件</span>
+        </div>
+        <div id="upcomingList" class="group-list"></div>
+      </section>
+
+      <section class="group-section">
+        <div class="section-heading home-heading">
+          <div>
+            <p class="section-label">TODAY</p>
+            <h2>今日のプラン</h2>
+          </div>
+          <span id="todayCount">0件</span>
+        </div>
+        <div id="todayList" class="group-list"></div>
+      </section>
+
+      <section class="group-section">
+        <div class="section-heading home-heading history-heading">
+          <div>
+            <p class="section-label">HISTORY</p>
+            <h2>履歴</h2>
+          </div>
+          <span id="historyCount">0件</span>
+        </div>
+        <div id="historyList" class="group-list history-list"></div>
+      </section>
+
+      <p class="notice">一覧はこのiPhoneに保存されます。共有リンクを開くと、コード入力なしで参加できます。</p>
+    </section>
+
+    <section id="planScreen" class="hidden">
+      <div class="sync-bar">
+        <button id="homeButton" class="home-back-button" type="button">← ホーム</button>
+        <span class="sync-dot"></span>
+        <span id="syncText">接続中</span>
+        <button id="membersButton" type="button">メンバー</button><button id="leaveButton" type="button">退出</button>
+      </div>
+
+      <section class="card plan-head">
+        <div class="plan-code-row">
+          <span class="section-label">TODAY'S PLAN</span>
+          <button id="copyCodeButton" class="code-pill" type="button">
+            CODE <strong id="planCodeText">------</strong>
+          </button>
+        </div>
+        <input id="planNameInput" class="plan-name" value="みんなのディズニープラン" aria-label="プラン名">
+        <div class="two-col">
+          <label class="mini-field">
+            <span>日付</span>
+            <input type="date" id="planDateInput">
+          </label>
+          <label class="mini-field">
+            <span>パーク</span>
+            <select id="parkInput">
+              <option value="東京ディズニーランド">🏰 ランド</option>
+              <option value="東京ディズニーシー">🌋 シー</option>
+              <option>その他</option>
+            </select>
+          </label>
+        </div>
+      </section>
+
+      <section class="next-card">
+        <span>NEXT</span>
+        <strong id="nextTime">--:--</strong>
+        <h2 id="nextTitle">予定を追加しよう</h2>
+        <p id="nextNote">みんなの追加・変更がここに反映されます</p>
+      </section>
+
+      <div class="section-heading">
+        <h2>今日の予定</h2>
+        <span id="itemCount">0件</span>
+      </div>
+
+      <div id="planList" class="plan-list"></div>
+      <button id="addButton" class="primary-button sticky-action" type="button">＋ 予定を追加</button>
+    </section>
+  </main>
+</div>
+
+
+
+<dialog id="joinDialog">
+  <form method="dialog" class="dialog-body">
+    <div class="dialog-heading">
+      <h2>コードで参加</h2>
+      <button value="cancel" class="close-button" aria-label="閉じる">×</button>
+    </div>
+    <label class="field">
+      <span>共有コード</span>
+      <input id="joinCodeInput" class="code-input" maxlength="6" placeholder="ABC123" autocapitalize="characters">
+    </label>
+    <button id="joinPlanButton" class="dialog-save" type="button">プランを探す</button>
+  </form>
+</dialog>
+
+<dialog id="inviteDialog">
+  <form method="dialog" class="dialog-body">
+    <div class="dialog-heading">
+      <h2>プランに参加</h2>
+      <button value="cancel" class="close-button" aria-label="閉じる">×</button>
+    </div>
+    <div class="invite-card">
+      <span id="inviteParkIcon" class="invite-icon">🏰</span>
+      <div>
+        <strong id="invitePlanName">みんなのディズニープラン</strong>
+        <p id="invitePlanMeta">日付・パーク</p>
+      </div>
+    </div>
+    <p class="invite-text"><strong id="inviteOwnerName">オーナー</strong>さんのプランに参加しますか？</p>
+    <button id="confirmJoinButton" class="dialog-save" type="button">参加する</button>
+  </form>
+</dialog>
+
+<dialog id="membersDialog">
+  <form method="dialog" class="dialog-body">
+    <div class="dialog-heading">
+      <h2>メンバー</h2>
+      <button value="cancel" class="close-button" aria-label="閉じる">×</button>
+    </div>
+    <div id="memberList" class="member-list"></div>
+    <button id="shareFromMembersButton" class="dialog-save" type="button">共有リンクを送る</button>
+    <button id="deletePlanButton" class="delete-button hidden" type="button">このプランを完全に削除</button>
+  </form>
+</dialog>
+
+<dialog id="profileDialog">
+  <form method="dialog" class="dialog-body">
+    <div class="dialog-heading">
+      <h2>プロフィール</h2>
+      <button value="cancel" class="close-button" aria-label="閉じる">×</button>
+    </div>
+
+    <div class="profile-preview">
+      <div class="profile-avatar">👤</div>
+      <div>
+        <span>現在の表示名</span>
+        <strong id="currentNameText">ゲスト</strong>
+      </div>
+    </div>
+
+    <label class="field">
+      <span>表示名</span>
+      <input id="profileNameInput" maxlength="20" placeholder="例：みほ">
+    </label>
+
+    <div class="icon-picker-wrap">
+      <span class="picker-label">アイコン</span>
+      <div id="iconPicker" class="icon-picker">
+        <button type="button" data-icon="🎀">🎀</button>
+        <button type="button" data-icon="🐭">🐭</button>
+        <button type="button" data-icon="🦆">🦆</button>
+        <button type="button" data-icon="🎬">🎬</button>
+        <button type="button" data-icon="⭐️">⭐️</button>
+        <button type="button" data-icon="🎈">🎈</button>
+        <button type="button" data-icon="🍿">🍿</button>
+        <button type="button" data-icon="🥨">🥨</button>
+        <button type="button" data-icon="📸">📸</button>
+        <button type="button" data-icon="✨">✨</button>
+      </div>
+    </div>
+
+    <button id="saveProfileButton" class="dialog-save" type="button">プロフィールを保存</button>
+    <p class="profile-note">このiPhoneに保存され、次回から自動で使われます。</p>
+  </form>
+</dialog>
+
+<dialog id="itemDialog">
+  <form method="dialog" class="dialog-body">
+    <div class="dialog-heading">
+      <h2 id="dialogTitle">予定を追加</h2>
+      <button value="cancel" class="close-button" aria-label="閉じる">×</button>
+    </div>
+
+    <label class="field">
+      <span>カテゴリ</span>
+      <select id="categoryInput">
+        <option value="dpa">DPA（ディズニー・プレミアアクセス）</option>
+        <option value="pp">PP（40周年記念プライオリティパス）</option>
+        <option value="sp">SP（スタンバイパス）</option>
+        <option value="food">フード（モバイルオーダー・PSなど）</option>
+        <option value="show">ショー・パレード</option>
+        <option value="greeting">グリーティング</option>
+        <option value="experience">予約・体験（ビビディ・ホテルなど）</option>
+      </select>
+    </label>
+
+    <label class="field">
+      <span>予定名</span>
+      <input id="itemTitleInput" placeholder="例：美女と野獣">
+    </label>
+
+    <div class="two-col">
+      <label class="field">
+        <span>開始（任意）</span>
+        <input type="time" id="startTimeInput" step="300">
+      </label>
+      <label class="field">
+        <span>終了（任意）</span>
+        <input type="time" id="endTimeInput" step="300">
+      </label>
+    </div>
+
+    <label class="field">
+      <span>メモ（任意）</span>
+      <input id="noteInput" placeholder="場所・待ち合わせなど">
+    </label>
+
+    <button id="saveItemButton" class="dialog-save" type="button">保存</button>
+    <button id="deleteItemButton" class="delete-button hidden" type="button">この予定を削除</button>
+  </form>
+</dialog>
+
+<div id="toast" class="toast">コピーしました</div>
+<script type="module" src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#ffffff">
+  <title>Disney Companion Admin</title>
+  <link rel="stylesheet" href="admin.css">
+</head>
+<body>
+  <div class="admin-app">
+    <header class="admin-topbar">
+      <div>
+        <p class="kicker">DISNEY COMPANION</p>
+        <h1>管理者ページ</h1>
+      </div>
+      <button id="signOutButton" class="ghost hidden" type="button">ログアウト</button>
+    </header>
+
+    <main>
+      <section id="loginScreen" class="card login-card">
+        <div class="admin-icon">🔐</div>
+        <h2>管理者ログイン</h2>
+        <p>Googleアカウントでログインします。管理者として登録されたアカウントだけ編集画面を開けます。</p>
+        <button id="googleLoginButton" class="primary" type="button">Googleでログイン</button>
+        <div class="setup-note">
+          <strong>初回設定中の場合</strong>
+          <p>ログイン後に表示されるUIDをFirebaseの <code>admins</code> に登録すると管理者として使えるようになります。</p>
+        </div>
+      </section>
+
+      <section id="unauthorizedScreen" class="card hidden">
+        <span class="status-badge">未登録</span>
+        <h2>このアカウントはまだ管理者登録されていません</h2>
+        <p>下のUIDをコピーして、Firebase Realtime Database の <code>admins / UID</code> に <code>true</code> を登録してください。</p>
+        <div class="uid-box">
+          <code id="uidText">---</code>
+          <button id="copyUidButton" type="button">コピー</button>
+        </div>
+        <p class="small">登録後にこのページを再読み込みすれば管理画面へ入れます。</p>
+      </section>
+
+      <section id="adminScreen" class="hidden">
+        <section class="dashboard-grid">
+          <article class="stat-card">
+            <span>登録フード</span>
+            <strong id="foodCount">0</strong>
+          </article>
+          <article class="stat-card">
+            <span>販売中</span>
+            <strong id="activeCount">0</strong>
+          </article>
+          <article class="stat-card">
+            <span>写真あり</span>
+            <strong id="photoCount">0</strong>
+          </article>
+        </section>
+
+        <div class="toolbar">
+          <div>
+            <p class="kicker">FOOD DATABASE</p>
+            <h2>フード管理</h2>
+          </div>
+          <button id="newFoodButton" class="primary compact" type="button">＋ 新規登録</button>
+        </div>
+
+        <div class="search-row">
+          <input id="foodSearch" placeholder="商品名・味・店舗で検索">
+          <select id="parkFilter">
+            <option value="all">両パーク</option>
+            <option value="land">ランド</option>
+            <option value="sea">シー</option>
+          </select>
+        </div>
+
+        <div id="foodList" class="food-list"></div>
+      </section>
+    </main>
+  </div>
+
+  <dialog id="foodDialog">
+    <form method="dialog" class="modal">
+      <div class="modal-head">
+        <h2 id="foodDialogTitle">フードを登録</h2>
+        <button class="close" value="cancel" aria-label="閉じる">×</button>
+      </div>
+
+      <div class="form-grid">
+        <label>
+          <span>商品名 *</span>
+          <input id="nameInput" placeholder="例：シナモンチュロス">
+        </label>
+
+        <div class="two-col">
+          <label>
+            <span>パーク *</span>
+            <select id="parkInput">
+              <option value="land">🏰 ランド</option>
+              <option value="sea">🌋 シー</option>
+            </select>
+          </label>
+          <label>
+            <span>カテゴリ *</span>
+            <select id="categoryInput">
+              <option value="meal">しっかりめ</option>
+              <option value="snack">軽食</option>
+              <option value="sweet">スイーツ</option>
+              <option value="drink">ドリンク</option>
+            </select>
+          </label>
+        </div>
+
+        <div class="two-col">
+          <label>
+            <span>種類</span>
+            <input id="typeInput" placeholder="チュロス / ポップコーン など">
+          </label>
+          <label>
+            <span>味</span>
+            <input id="flavorInput" placeholder="シナモン / キャラメル など">
+          </label>
+        </div>
+
+        <div class="two-col">
+          <label>
+            <span>価格</span>
+            <input id="priceInput" type="number" inputmode="numeric" placeholder="500">
+          </label>
+          <label>
+            <span>販売状況</span>
+            <select id="statusInput">
+              <option value="active">販売中</option>
+              <option value="upcoming">販売予定</option>
+              <option value="ended">販売終了</option>
+            </select>
+          </label>
+        </div>
+
+        <label>
+          <span>エリア</span>
+          <input id="areaInput" placeholder="例：ウエスタンランド">
+        </label>
+
+        <label>
+          <span>販売店舗・ワゴン</span>
+          <input id="shopInput" placeholder="例：パークサイドワゴン">
+        </label>
+
+        <div class="toggle-grid">
+          <label class="toggle-line"><input id="mobileOrderInput" type="checkbox"> モバイルオーダー対応</label>
+          <label class="toggle-line"><input id="limitedInput" type="checkbox"> 期間限定</label>
+        </div>
+
+        <label>
+          <span>販売開始日</span>
+          <input id="startDateInput" type="date">
+        </label>
+        <label>
+          <span>販売終了日</span>
+          <input id="endDateInput" type="date">
+        </label>
+
+        <label>
+          <span>写真提供者</span>
+          <input id="creditInput" placeholder="例：@xxxx / みほ">
+        </label>
+
+        <label class="image-field">
+          <span>フード写真</span>
+          <input id="photoInput" type="file" accept="image/*">
+          <small>Instagram等で掲載許可をもらった写真を保存してから選択してください。</small>
+        </label>
+
+        <div id="photoPreviewWrap" class="photo-preview-wrap hidden">
+          <img id="photoPreview" alt="プレビュー">
+          <button id="removePhotoButton" type="button">写真を外す</button>
+        </div>
+
+        <label>
+          <span>管理メモ</span>
+          <textarea id="adminNoteInput" rows="3" placeholder="掲載許可をもらった日、注意事項など"></textarea>
+        </label>
+      </div>
+
+      <div class="modal-actions">
+        <button id="deleteFoodButton" class="danger hidden" type="button">削除</button>
+        <button id="saveFoodButton" class="primary" type="button">保存</button>
+      </div>
+    </form>
+  </dialog>
+
+  <div id="toast" class="toast"></div>
+  <script type="module" src="admin.js"></script>
+</body>
+</html>
